@@ -1,0 +1,29 @@
+name: Deploy PHP App
+
+on:
+  push:
+    branches:
+      - main   # Cambia si usas otra rama (ej. master)
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v3
+
+      - name: Configurar SSH
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
+
+      - name: Desplegar en servidor
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
+          cd /ruta/a/tu/proyecto  # Cambia a la ruta de tu proyecto en el servidor
+          git pull origin main
+          # Reinicia Apache o Nginx si es necesario
+          sudo systemctl restart apache2 || true
+          sudo systemctl restart nginx || true
+          EOF
